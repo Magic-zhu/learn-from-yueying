@@ -1,0 +1,32 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+.piegraph {
+  display: inline-block;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background-image: conic-gradient(#ff0 0, #f00 90deg, #00f 180deg, #008000 270deg, #ff0 360deg);
+}
+.part2 {
+  display: flex;
+}
+.heart {
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+  background: #f00;
+  width: 200px;
+  height: 200px;
+}
+.heart2 {
+  clip-path: ellipse(130px 140px at 10% 20%);
+  background: #00f;
+  width: 200px;
+  height: 200px;
+}
+.heart3 {
+  clip-path: polygon(25% 0, 50% 20%, 75% 0, 100% 20%, 100% 60%, 50% 95%, 0 60%, 0 20%);
+  background: #ffc0cb;
+  width: 200px;
+  height: 200px;
+}
