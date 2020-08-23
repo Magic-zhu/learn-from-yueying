@@ -1,0 +1,3 @@
+import {
+    regularShape
+} from './regularShape'
