@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<!-- saved from url=(0077)file:///Users/admin/Documents/github/learn-from-yueying/charpter08/index.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <canvas id="cv" width="1000" height="1000"></canvas>
+
+<script src="./Document_files/tess2.js"></script>
+<script>
+    const vertices = [
+    [-0.7, 0.5],
+    [-0.4, 0.3],
+    [-0.25, 0.71],
+    [-0.1, 0.56],
+    [-0.1, 0.13],
+    [0.4, 0.21],
+    [0, -0.6],
+    [-0.3, -0.3],
+    [-0.6, -0.3],
+    [-0.45, 0.0],
+    ];
+
+    var res = Tess2.tesselate({
+        contours: [vertices.flat()],
+        windingRule: Tess2.WINDING_ODD,
+        elementType: Tess2.POLYGONS,
+        polySize: 3,
+        vertexSize: 2
+    });
+    let triangles = res.elements
+    const cvsCtx = document.getElementById('cv').getContext('2d')
+    cvsCtx.translate(500, 500)
+
+    for (let i =0;i<8;i++){
+        cvsCtx.beginPath();
+        cvsCtx.moveTo(vertices[i*3][0]*200, vertices[i*3][1]*200);
+        cvsCtx.lineTo(vertices[i*3+1][0]*200, vertices[i*3+1][1]*200);
+        cvsCtx.lineTo(vertices[i*3+2][0]*200, vertices[i*3+2][1]*200);
+        cvsCtx.closePath();
+        cvsCtx.stroke();
+    }
+            
+</script>
+</body></html>

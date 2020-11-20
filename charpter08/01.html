@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <canvas id="cv" width="1000" height="1000"></canvas>
+</body>
+<script src="../libs/tess2.js"></script>
+<script src="../libs/earcut.js"></script>
+<script>
+    
+    let vertices = [[-0.7, 0.5], [-0.4, 0.3], [-0.25, 0.71], [-0.1, 0.56], [-0.1, 0.13], [0.4, 0.21], [0, -0.6], [-0.3, -0.3], [-0.6, -0.3], [-0.45, 0.0]];
+    vertices = vertices.map(([x,y])=> [x*256,y*256])
+    var res = Tess2.tesselate({
+        contours: [vertices.flat()],
+        elementType: Tess2.TRIANGLES,
+        windingRule: Tess2.WINDING_NONZERO,
+        polySize: 3,
+        vertexSize: 2
+    });
+    console.log(res)
+    let triangles = res.elements
+    console.log(triangles)
+    const cvsCtx = document.getElementById('cv').getContext('2d')
+    cvsCtx.translate(200, 200)
+    
+    for (let i = 0; i < 8; i++) {
+        cvsCtx.beginPath();
+        let a = triangles[i * 3]
+        let b = triangles[i * 3 + 1]
+        let c = triangles[i * 3 + 2]
+        cvsCtx.moveTo(res.vertices[a * 2], res.vertices[a * 2 + 1]);
+        cvsCtx.lineTo(res.vertices[b * 2], res.vertices[b * 2 + 1]);
+        cvsCtx.lineTo(res.vertices[c * 2], res.vertices[c * 2 + 1]);
+        cvsCtx.closePath();
+        cvsCtx.stroke();
+    }
+    // let triangles = earcut(vertices.flat()
+    // for (let i = 0; i <8; i++) {
+    //     cvsCtx.beginPath();
+    //     cvsCtx.moveTo(vertices[triangles[i * 3]][0], vertices[triangles[i * 3]][1]);
+    //     cvsCtx.lineTo(vertices[triangles[i * 3 + 1]][0], vertices[triangles[i * 3 + 1]][1]);
+    //     cvsCtx.lineTo(vertices[triangles[i * 3 + 2]][0], vertices[triangles[i * 3 + 1]][1]);
+    //     cvsCtx.closePath();
+    //     cvsCtx.stroke();
+    // }
+</script>
+
+</html>
