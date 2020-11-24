@@ -1,11 +1,173 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
 </head>
+
 <body>
-    
+    <canvas width="500" height="500"></canvas>
 </body>
+<script src="../libs/earcut.js"></script>
+<script>
+    const canvas = document.querySelector('canvas');
+    const gl = canvas.getContext('webgl');
+    class Vector2D extends Array {
+        constructor(x = 1, y = 0) {
+            super(x, y);
+        }
+
+        set x(v) {
+            this[0] = v;
+        }
+
+        set y(v) {
+            this[1] = v;
+        }
+
+        get x() {
+            return this[0];
+        }
+
+        get y() {
+            return this[1];
+        }
+
+        get length() {
+            return Math.hypot(this.x, this.y);
+        }
+
+        get dir() {
+            return Math.atan2(this.y, this.x);
+        }
+
+        copy() {
+            return new Vector2D(this.x, this.y);
+        }
+
+        add(v) {
+            this.x += v.x;
+            this.y += v.y;
+            return this;
+        }
+
+        sub(v) {
+            this.x -= v.x;
+            this.y -= v.y;
+            return this;
+        }
+
+        scale(a) {
+            this.x *= a;
+            this.y *= a;
+            return this;
+        }
+
+        cross(v) {
+            return this.x * v.y - v.x * this.y;
+        }
+
+        dot(v) {
+            return this.x * v.x + v.y * this.y;
+        }
+
+        normalize() {
+            return this.scale(1 / this.length);
+        }
+
+        rotate(rad) {
+            const c = Math.cos(rad),
+                s = Math.sin(rad);
+            const [x, y] = this;
+
+            this.x = x * c + y * -s;
+            this.y = x * s + y * c;
+
+            return this;
+        }
+    }
+    function regularShape(edges = 3, x, y, step) {
+        const ret = [];
+        const delta = Math.PI * (1 - (edges - 2) / edges);
+        let p = new Vector2D(x, y);
+        const dir = new Vector2D(step, 0);
+        ret.push(p);
+        for (let i = 0; i < edges; i++) {
+            p = p.copy().add(dir.rotate(delta));
+            ret.push(p);
+        }
+        return ret;
+    }
+    let vertices = regularShape(5, 0,0,0.5).map(({ x, y }) => [x, y])
+    vertices.pop()
+    // cvsCtx.beginPath();
+    // for (let i = 0; i < vertices.length; i++) {
+    //     if (i == 0) {
+    //         cvsCtx.moveTo(vertices[i][0], vertices[i][1]);
+    //     } else {
+    //         cvsCtx.lineTo(vertices[i][0], vertices[i][1]);
+    //     }
+    // }
+    // cvsCtx.closePath();
+    // cvsCtx.stroke();
+    let triangles = earcut(vertices.flat())
+    // console.log(vertices,triangles)
+    // for (let i = 0; i < triangles.length/3; i++) {
+    //     cvsCtx.beginPath();
+    //     cvsCtx.moveTo(vertices[triangles[i * 3]][0], vertices[triangles[i * 3]][1]);
+    //     cvsCtx.lineTo(vertices[triangles[i * 3 + 1]][0], vertices[triangles[i * 3 + 1]][1]);
+    //     cvsCtx.lineTo(vertices[triangles[i * 3 + 2]][0], vertices[triangles[i * 3 + 2]][1]);
+    //     cvsCtx.closePath();
+    //     cvsCtx.stroke();
+    // }
+    let result = triangles.map(t=>[vertices[t][0],vertices[t][1]]).flat()
+    console.log(result)
+    const vertex = `
+        attribute vec2 position;
+        void main() {
+            gl_PointSize = 1.0;
+            gl_Position = vec4(position, 1.0, 1.0);
+        }
+    `;
+    const fragment = `
+        precision mediump float;
+        void main()
+        {
+            gl_FragColor = vec4(1.0, 0.0, 1.0, 0.8);
+        }    
+    `;
+    const vertexShader = gl.createShader(gl.VERTEX_SHADER);
+    gl.shaderSource(vertexShader, vertex);
+    gl.compileShader(vertexShader);
+
+
+    const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
+    gl.shaderSource(fragmentShader, fragment);
+    gl.compileShader(fragmentShader);
+
+
+    const program = gl.createProgram();
+    gl.attachShader(program, vertexShader);
+    gl.attachShader(program, fragmentShader);
+    gl.linkProgram(program);
+
+
+    gl.useProgram(program);
+
+    const points = new Float32Array(result);
+
+    const bufferId = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, bufferId);
+    gl.bufferData(gl.ARRAY_BUFFER, points, gl.STATIC_DRAW);
+
+
+    const vPosition = gl.getAttribLocation(program, 'position');//获取顶点着色器中的position变量的地址
+    gl.vertexAttribPointer(vPosition, 2, gl.FLOAT, false, 0, 0);//给变量设置长度和类型
+    gl.enableVertexAttribArray(vPosition);//激活这个变量
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.drawArrays(gl.LINES, 0, result.length / 2);
+</script>
+
 </html>
