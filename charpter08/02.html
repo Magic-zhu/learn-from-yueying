@@ -100,7 +100,7 @@
         }
         return ret;
     }
-    let vertices = regularShape(5, 0,0,0.5).map(({ x, y }) => [x, y])
+    let vertices = regularShape(5, 0, 0, 0.5).map(({ x, y }) => [x, y])
     vertices.pop()
     // cvsCtx.beginPath();
     // for (let i = 0; i < vertices.length; i++) {
@@ -122,12 +122,33 @@
     //     cvsCtx.closePath();
     //     cvsCtx.stroke();
     // }
-    let result = triangles.map(t=>[vertices[t][0],vertices[t][1]]).flat()
-    console.log(result)
+    let result = triangles.map(t => [Number(vertices[t][0].toFixed(2)), Number(vertices[t][1].toFixed(2))]).flat()
+
+    //生成参数方程
+    function parametric(xFunc, yFunc) {
+        return function (start, end, seg = 100, ...args) {
+            const points = [];
+            for (let i = 0; i <= seg; i++) {
+                const p = i / seg;
+                const t = start * (1 - p) + end * p;
+                const x = xFunc(t, ...args); // 计算参数方程组的x
+                const y = yFunc(t, ...args);  // 计算参数方程组的y
+                points.push([x, y]);
+            }
+            return points
+        };
+    }
+    //获取椭圆坐标点
+    const ellipse = parametric(
+        (t, a, b) => a * Math.cos(t),
+        (t, a, b) => b * Math.sin(t)
+    )
+    ellipsePoints = ellipse(0, Math.PI * 2, 100, 0.5, 0.3)
+    
     const vertex = `
         attribute vec2 position;
         void main() {
-            gl_PointSize = 1.0;
+            gl_PointSize = 20.0;
             gl_Position = vec4(position, 1.0, 1.0);
         }
     `;
@@ -135,7 +156,7 @@
         precision mediump float;
         void main()
         {
-            gl_FragColor = vec4(1.0, 0.0, 1.0, 0.8);
+            gl_FragColor = vec4(0.0, 0.0, 1.0, 1.0);
         }    
     `;
     const vertexShader = gl.createShader(gl.VERTEX_SHADER);
@@ -156,8 +177,7 @@
 
     gl.useProgram(program);
 
-    const points = new Float32Array(result);
-
+    const points = new Float32Array(ellipsePoints.flat());
     const bufferId = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, bufferId);
     gl.bufferData(gl.ARRAY_BUFFER, points, gl.STATIC_DRAW);
@@ -167,7 +187,7 @@
     gl.vertexAttribPointer(vPosition, 2, gl.FLOAT, false, 0, 0);//给变量设置长度和类型
     gl.enableVertexAttribArray(vPosition);//激活这个变量
     gl.clear(gl.COLOR_BUFFER_BIT);
-    gl.drawArrays(gl.LINES, 0, result.length / 2);
+    gl.drawArrays(gl.LINE_LOOP, 0, points.length / 2);
 </script>
 
 </html>
